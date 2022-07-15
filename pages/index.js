@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import Navigation from '../components/Navigation';
 import UserBar from '../components/UserBar';
+import { auth } from '../firebase';
 import styles from '../styles/Home.module.css';
 
 export default function Home() {
