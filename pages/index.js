@@ -1,10 +1,13 @@
 import Head from 'next/head';
 import Image from 'next/image';
+import { useAuthState } from 'react-firebase-hooks/auth';
 import Navigation from '../components/Navigation';
 import UserBar from '../components/UserBar';
 import styles from '../styles/Home.module.css';
 
 export default function Home() {
+  const [user, userLoading, userError] = useAuthState(auth);
+
   return (
     <div className="bg-[rgb(15,23,42)] text-white/70 min-h-screen">
       <Head>
@@ -14,7 +17,7 @@ export default function Home() {
       </Head>
       <div>
         <Navigation />
-        <UserBar />
+        {user ? <UserBar /> : ''}
       </div>
     </div>
   );
