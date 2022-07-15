@@ -1,9 +1,11 @@
 import {
   addDoc,
   collection,
+  doc,
   orderBy,
   query,
   serverTimestamp,
+  setDoc,
 } from 'firebase/firestore';
 import React, { useState } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -13,7 +15,7 @@ import PostScreen from './PostScreen';
 import UserCardPost from './UserCardPost';
 import { v4 as uuidv4 } from 'uuid';
 
-function UserBar() {
+function UserBar({}) {
   const [user, userLoading, userError] = useAuthState(auth);
   const [hidePostBar, setHidePostBar] = useState(true);
   const [data, setData] = useState('');
@@ -82,13 +84,15 @@ function UserBar() {
       </div>
       <div>
         <PostScreen>
-          {posts?.map((item) => {
+          {postSnapshot?.docs.map((item) => {
             return (
               <UserCardPost
-                key={item.post}
-                item={item}
+                keyReference={item.id}
+                key={item.data().key}
+                item={item.data()}
                 loading={postLoading}
                 error={postError}
+                postSnapshot={postSnapshot}
               />
             );
           })}
@@ -97,5 +101,4 @@ function UserBar() {
     </div>
   );
 }
-
 export default UserBar;

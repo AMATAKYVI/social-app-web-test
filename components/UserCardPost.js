@@ -1,36 +1,40 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { styled } from '@mui/material/styles';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '../firebase';
+import { auth, db } from '../firebase';
 import moment from 'moment';
-function UserCardPost({ item, loading, error }) {
-  const [user, userLoading, userError] = useAuthState(auth);
-
+import { collection, orderBy, query } from 'firebase/firestore';
+import UserComment from './UserComment';
+import { useCollectionData } from 'react-firebase-hooks/firestore';
+function UserCardPost({ item, loading, error, postSnapshot, keyReference }) {
   const [expanded, setExpanded] = useState(false);
+  const postRef = collection(db, 'post', keyReference, 'comment');
+  const q = query(postRef, orderBy('date', 'desc'));
+  const [comment, commentLoading, commentError, commentSnapshot] =
+    useCollectionData(q);
+  console.log(comment);
   const handleExpandClick = () => {
     setExpanded(!expanded);
   };
-  console.log(item.date.toDate().toLocaleString());
+  useEffect(() => {}, []);
   return (
     <div className="">
       {loading ? (
         'loading now'
       ) : (
-        <div className="flex bg-white/80 shadow-lg rounded-lg mx-4 md:mx-auto py-5 mb-2 mt-2 max-w-md md:max-w-2xl ">
-          <div className="flex items-start px-4 py-2">
-            <img
-              className="w-12 h-12 rounded-full object-cover mr-4 shadow"
-              src={`${
-                user
-                  ? user?.photoURL
-                  : 'https://images.unsplash.com/photo-1542156822-6924d1a71ace?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=60'
-              }`}
-              alt="avatar"
-            />
-            <div className="">
+        <div className="pr-5 pl-10 bg-white/80 shadow-lg rounded-lg mx-4 md:mx-auto py-5 mb-2 mt-2 max-w-md md:max-w-2xl ">
+          <div className="flex  px-4 py-2">
+            <div>
+              <img
+                className="w-12 h-12 rounded-full object-cover mr-4 shadow"
+                src={`${item.photoURL}`}
+                alt="avatar"
+              />
+            </div>
+            <div className="flex-1 w-full">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-900 -mt-1">
-                  {user?.displayName}
+                  {item.name}
                 </h2>
                 <small className="text-sm text-gray-700">
                   {' '}
@@ -46,7 +50,7 @@ function UserCardPost({ item, loading, error }) {
               </p>
               <p className="mt-3 text-gray-700 text-sm">{item.post}</p>
               <div className="mt-4 flex items-center">
-                <div className="flex mr-2 text-gray-700 text-sm mr-3">
+                <div className="flex  text-gray-700 text-sm mr-3">
                   <svg
                     fill="none"
                     viewBox="0 0 24 24"
@@ -62,23 +66,15 @@ function UserCardPost({ item, loading, error }) {
                   </svg>
                   <span>0</span>
                 </div>
-                <div className="flex mr-2 text-gray-700 text-sm mr-8">
-                  <svg
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    className="w-4 h-4 mr-1"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"
-                    />
-                  </svg>
-                  <span>0</span>
+                <div className="flex items-center  text-gray-700 text-sm mr-8">
+                  <UserComment
+                    item={item}
+                    postSnapshot={postSnapshot}
+                    keyReference={keyReference}
+                  />
+                  <span>{comment?.length}</span>
                 </div>
-                <div className="flex mr-2 text-gray-700 text-sm mr-4">
+                <div className="flex  text-gray-700 text-sm mr-4">
                   <svg
                     fill="none"
                     viewBox="0 0 24 24"
@@ -94,9 +90,37 @@ function UserCardPost({ item, loading, error }) {
                   </svg>
                   <span>share</span>
                 </div>
+              </div>{' '}
+              <div className="text-black text-xs mt-2">
+                {comment?.map((item) => {
+                  return (
+                    <div
+                      className=" bg-white p-3 mb-1 rounded-lg"
+                      key={item.key}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <img
+                            src={item.photoURL}
+                            className="rounded-full w-7"
+                            alt=""
+                          />
+                        </div>
+                        <div>
+                          {item.timestamp
+                            ? moment(item.date.toDate()).fromNow()
+                            : 'Loading...'}
+                        </div>
+                      </div>
+                      <div className="mt-2">
+                        <h1 className="text-gray-800"> {item.comment}</h1>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            </div>
-          </div>
+            </div>{' '}
+          </div>{' '}
         </div>
       )}{' '}
     </div>
