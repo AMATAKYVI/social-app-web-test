@@ -27,7 +27,7 @@ function UserBar({}) {
     if (data.length < 0) {
       return;
     }
-    const docRef = await addDoc(collection(db, 'post'), {
+    await addDoc(collection(db, 'post'), {
       name: user.displayName,
       email: user.email,
       uid: user.uid,

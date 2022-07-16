@@ -5,7 +5,7 @@ import Navigation from '../components/Navigation';
 import UserBar from '../components/UserBar';
 import { auth } from '../firebase';
 import styles from '../styles/Home.module.css';
-
+import LoginPage from '../components/LoginPage';
 export default function Home() {
   const [user, userLoading, userError] = useAuthState(auth);
 
@@ -18,7 +18,7 @@ export default function Home() {
       </Head>
       <div>
         <Navigation />
-        {user ? <UserBar /> : ''}
+        {user ? <UserBar /> : <LoginPage />}
       </div>
     </div>
   );

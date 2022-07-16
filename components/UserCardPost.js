@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { styled } from '@mui/material/styles';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db } from '../firebase';
@@ -6,17 +6,33 @@ import moment from 'moment';
 import { collection, orderBy, query } from 'firebase/firestore';
 import UserComment from './UserComment';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
+import UserLike from './UserLike';
+import UserCommentSecond from './UserCommentSecond';
+import { Button } from '@mui/material';
 function UserCardPost({ item, loading, error, postSnapshot, keyReference }) {
   const [expanded, setExpanded] = useState(false);
-  const postRef = collection(db, 'post', keyReference, 'comment');
-  const q = query(postRef, orderBy('date', 'desc'));
+  //comment level one
+  const commetRefTotal = collection(db, 'post', keyReference, 'comment');
+  const qComment = query(commetRefTotal, orderBy('date', 'desc'));
   const [comment, commentLoading, commentError, commentSnapshot] =
-    useCollectionData(q);
-  console.log(comment);
-  const handleExpandClick = () => {
-    setExpanded(!expanded);
-  };
-  useEffect(() => {}, []);
+    useCollectionData(qComment);
+  // comment level two
+  // const commetRefTotalTwo = collection(
+  //   db,
+  //   'post',
+  //   keyReferenceOne,
+  //   'comment',
+  //   keyReferenceTwo,
+  //   'comment'
+  // );
+  // const qCommentTwo = query(commetRefTotalTwo, orderBy('date', 'desc'));
+  // const [commentTwo, commentTwoLoading, commentTwoError, commentTwoSnapshot] =
+  //   useCollectionData(qCommentTwo);
+  //like level one
+  const likeRefTotal = collection(db, 'post', keyReference, 'like');
+  const qLike = query(likeRefTotal);
+  const [like, likeLoading, likeError, likeSnapshot] = useCollectionData(qLike);
+
   return (
     <div className="">
       {loading ? (
@@ -38,33 +54,23 @@ function UserCardPost({ item, loading, error, postSnapshot, keyReference }) {
                 </h2>
                 <small className="text-sm text-gray-700">
                   {' '}
-                  {item.timestamp
-                    ? moment(item.date.toDate()).fromNow()
-                    : 'Loading...'}
+                  {item.timestamp ? moment(item.date.toDate()).fromNow() : ''}
                 </small>
               </div>
               <p className="text-gray-700 text-xs ">
-                {item.timestamp
-                  ? item.date.toDate().toLocaleString()
-                  : 'Loading...'}
+                {item.timestamp ? item.date.toDate().toLocaleString() : ''}
               </p>
-              <p className="mt-3 text-gray-700 text-sm">{item.post}</p>
+              <p className="mt-3 text-gray-700 text-lg font-semibold tracking-wide border px-10 py-5 rounded-lg bg-white">
+                {item.post}
+              </p>
               <div className="mt-4 flex items-center">
-                <div className="flex  text-gray-700 text-sm mr-3">
-                  <svg
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    className="w-4 h-4 mr-1"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                    />
-                  </svg>
-                  <span>0</span>
+                <div className="flex items-center  text-gray-700 text-sm mr-3">
+                  <UserLike
+                    item={item}
+                    postSnapshot={postSnapshot}
+                    keyReference={keyReference}
+                  />
+                  <span>{like?.length}</span>
                 </div>
                 <div className="flex items-center  text-gray-700 text-sm mr-8">
                   <UserComment
@@ -74,7 +80,7 @@ function UserCardPost({ item, loading, error, postSnapshot, keyReference }) {
                   />
                   <span>{comment?.length}</span>
                 </div>
-                <div className="flex  text-gray-700 text-sm mr-4">
+                <Button>
                   <svg
                     fill="none"
                     viewBox="0 0 24 24"
@@ -89,31 +95,47 @@ function UserCardPost({ item, loading, error, postSnapshot, keyReference }) {
                     />
                   </svg>
                   <span>share</span>
-                </div>
-              </div>{' '}
+                </Button>
+              </div>
               <div className="text-black text-xs mt-2">
-                {comment?.map((item) => {
+                {commentSnapshot?.docs.map((item) => {
                   return (
                     <div
-                      className=" bg-white p-3 mb-1 rounded-lg"
-                      key={item.key}
+                      className=" bg-gray-200 p-3 mb-1 rounded-lg"
+                      key={`${item.id}${item.data().uid}`}
                     >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <img
-                            src={item.photoURL}
-                            className="rounded-full w-7"
-                            alt=""
-                          />
+                      <div className="border-b border-black">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <img
+                              src={item.data().photoURL}
+                              className="rounded-full w-7"
+                              alt=""
+                            />
+                          </div>
+                          <div>
+                            {item.data().timestamp
+                              ? moment(item.data().date.toDate()).fromNow()
+                              : 'Loading...'}
+                          </div>
                         </div>
-                        <div>
-                          {item.timestamp
-                            ? moment(item.date.toDate()).fromNow()
-                            : 'Loading...'}
+                        <div className="mt-2">
+                          <h1 className="text-gray-800 px-10 py-2">
+                            {' '}
+                            {item.data().comment}
+                          </h1>
                         </div>
                       </div>
-                      <div className="mt-2">
-                        <h1 className="text-gray-800"> {item.comment}</h1>
+
+                      <div className="  items-center  ">
+                        <div className=" items-center  text-gray-700 text-sm mr-8">
+                          <UserCommentSecond
+                            keyReferenceOne={keyReference}
+                            keyReferenceTwo={item.id}
+                            key={item.data().key}
+                            item={item.data()}
+                          />
+                        </div>
                       </div>
                     </div>
                   );

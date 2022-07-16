@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
@@ -27,7 +27,7 @@ const style = {
   p: 4,
 };
 
-export default function UserComment({ item, postSnapshot, keyReference }) {
+export default function UserComment({ item, keyReference }) {
   const [open, setOpen] = useState(false);
   const [comment, setComment] = useState('');
   const [user, userLoading, userError] = useAuthState(auth);
@@ -38,7 +38,7 @@ export default function UserComment({ item, postSnapshot, keyReference }) {
       return;
     }
     const commentRef = collection(db, 'post', keyReference, 'comment');
-    const addComment = await addDoc(commentRef, {
+    await addDoc(commentRef, {
       keyReference: keyReference,
       comment: comment,
       name: user.displayName,
@@ -49,7 +49,7 @@ export default function UserComment({ item, postSnapshot, keyReference }) {
       date: new Date(),
       timestamp: serverTimestamp(),
     });
-
+    setComment('');
     handleClose();
   };
   return (
